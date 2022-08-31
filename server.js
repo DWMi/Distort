@@ -1,7 +1,6 @@
 import { createServer } from "http";
 import { Server } from "socket.io";
 import express from "express"
-import { log } from "console";
 
 
 const app = express()
@@ -48,11 +47,6 @@ io.on("connection", (socket) => {
 httpServer.listen(port, () => {
     console.log("Server is running on port: " + port)
 })
-
-
-
-
-
 
 
 
