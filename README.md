@@ -27,3 +27,5 @@ VG:
 10.	När man gått med i ett rum skall en lista finnas som visar alla nicknames på de som finns i det aktuella rummet.
 
 11.	Det ska finnas minst 2 kommandon (minst två olika 3-part API’er.
+
+
