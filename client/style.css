@@ -1,0 +1,54 @@
+*{
+    padding:0;
+    box-sizing: border-box;
+    margin: 0;
+}
+
+.container{
+    display:flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100vh;
+}
+
+.chatConBox{
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    border: 2px solid black;
+    width: 50%;
+    height: 40%;
+}
+
+.chatSenderCon{
+    display: flex;
+    flex-direction: row;
+    margin: 2px;
+}
+.msgInput{
+    height: 30px;
+    width: 100%;
+}
+.msgCon{
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    margin: 10px;
+    overflow-y: scroll;
+}
+.outBubble{
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    margin: 5px;
+    width: 100%;
+}
+.outMsg{
+    padding: 10px;
+    background-color: rgb(0, 119, 255);
+    border-radius: 10px;
+    color: white;
+    font-weight: bold;
+    max-width: 30%;
+    word-wrap: break-word;
+}
