@@ -104,4 +104,33 @@ document.getElementById("getRooms").addEventListener("click", () => {
 
 
 
+function sendApiRequest() {
+
+    var requestOptions = {
+        method: 'GET',
+        redirect: 'follow'
+      };
+      
+      const userInput = document.getElementById("input").value
+      const giphyApiKey = "Bhx9WisWg50kcqriLhdZQJYiycqFewTV";
+      const giphyApiUrl = `https://api.giphy.com/v1/gifs/search?api_key=${giphyApiKey}&q=${userInput}&limit=25&offset=0&rating=g&lang=en`
+
+
+      fetch(giphyApiUrl, requestOptions)
+        .then(response => response.json())
+        .then(result => console.log(result))
+        // här crashar det
+        .then(function(data) {
+            console.log(data[0].images.fixed_height.webp)
+            const imgPath = data[0].images.fixed_height.webp
+            const img = document.createElement("img")
+            img.src = imgPath
+            document.body.appendChild(img)
+        }).catch(error => console.log('error', error));     
+  }
+
+  const gifBtn = document.querySelector(".gifBtn")
+  
+  gifBtn.addEventListener("click", sendApiRequest())
+
 
