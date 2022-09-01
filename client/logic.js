@@ -104,33 +104,53 @@ document.getElementById("getRooms").addEventListener("click", () => {
 
 
 
+
+
+
 function sendApiRequest() {
 
-    var requestOptions = {
-        method: 'GET',
-        redirect: 'follow'
-      };
-      
+    let gifArray
+
       const userInput = document.getElementById("input").value
       const giphyApiKey = "Bhx9WisWg50kcqriLhdZQJYiycqFewTV";
-      const giphyApiUrl = `https://api.giphy.com/v1/gifs/search?api_key=${giphyApiKey}&q=${userInput}&limit=25&offset=0&rating=g&lang=en`
+      const giphyApiUrl = `https://api.giphy.com/v1/gifs/search?api_key=${giphyApiKey}&q=${userInput}&limit=10&offset=0&rating=g&lang=en`
 
-
-      fetch(giphyApiUrl, requestOptions)
+      fetch(giphyApiUrl, {
+        method: 'GET',
+        redirect: 'follow',
+      })
         .then(response => response.json())
-        .then(result => console.log(result))
-        // här crashar det
-        .then(function(data) {
-            console.log(data[0].images.fixed_height.webp)
-            const imgPath = data[0].images.fixed_height.webp
-            const img = document.createElement("img")
-            img.src = imgPath
-            document.body.appendChild(img)
-        }).catch(error => console.log('error', error));     
-  }
+        .then(result => gifArray = result) 
+        .then(() => {
+            console.log(gifArray.data)
+            const gifArrayMap = gifArray.data
+            gifArrayMap.map(data => {
+                // return console.log(data.images.downsized.url)
+                return gifOutput(data.images.downsized.url)
+
+            })
+    }).catch(error => console.log('error', error));     
+}
+
+
+
+
 
   const gifBtn = document.querySelector(".gifBtn")
+
+  gifBtn.addEventListener("click", function() {
+    sendApiRequest() 
+  })
+
+
+
+function gifOutput(gif) {
+
+    
+
+    const img = document.createElement("img")
+    const imgPath = gif
+    img.src = imgPath
+    document.body.append(img)
   
-  gifBtn.addEventListener("click", sendApiRequest())
-
-
+}
