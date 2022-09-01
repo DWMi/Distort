@@ -1,7 +1,7 @@
 # Distort
 Chatt app made with socket.io
 
-tenor API KEY: AIzaSyCLpygtbuxVeqH-Yanwjxxa_vFN3zk2TTA
+
 G:
 
 1.	En fungerade chatt där man kan skriva ett kommando ”/” för att utföra en operation som integrerar med 3-part. API-anropet skall ske via er server.
