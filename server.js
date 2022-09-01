@@ -28,6 +28,8 @@ io.on("connection", (socket) => {
     // Rums lista, körs functionen uppdateras det på alla clienter 
     socket.on("getRooms", () => {
         console.log(io.sockets.adapter.rooms);
+        const filteredRoomsArray = convertRoomMap()
+        io.emit('rooms', filteredRoomsArray)
 
     })
 
@@ -42,7 +44,31 @@ io.on("connection", (socket) => {
     })
 })
 
+const convertRoomMap =()=>{
 
+    const convertedArray = Array.from(io.sockets.adapter.rooms)
+
+    console.log(io.sockets.adapter.rooms);
+    console.log(convertedArray);
+    
+    const filteredRooms = convertedArray.filter(room => ! room[1].has(room[0]))
+    console.log(filteredRooms);
+
+    const roomsWithSocketID = filteredRooms.map((roomArray) =>{
+        return {room: roomArray[0], sockets:Array.from(roomArray[1])}
+    })
+    console.log(roomsWithSocketID);
+    
+    const roomsWithIdsAndNickName = roomsWithSocketID.map((roomObj)=>{
+        const nicknames = roomObj.sockets.map((socketId)=>{
+            return { id: socketId, nickname: io.sockets.sockets.get(socketId).nickname }
+        })
+        return {room: roomObj.room, sockets: nicknames}
+    })
+
+    return roomsWithIdsAndNickName
+  
+}
 
 httpServer.listen(port, () => {
     console.log("Server is running on port: " + port)
