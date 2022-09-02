@@ -14,8 +14,8 @@ app.use("/", express.static("./client"))
 
 io.on("connection", (socket) => {
     console.log("Socket has connected: " + socket.id)
+    io.emit("newSocketConnected", socket.id)
 
-    // io.emit("newSocketConnected", socket.id)
 
     socket.on("join", (socketRoomData) => {
         socket.leave(socketRoomData.roomToLeave) // lämnar rum man är i om man joinar ett nytt
@@ -31,16 +31,50 @@ io.on("connection", (socket) => {
 
     })
 
-
-
-    // socket.join("") //ange namnet på rummet
-    // socket.leave("") //ange namnet på rummet
-
-
     socket.on("msg", (msgObj) => {
         io.in(msgObj.joinedRoom).emit("msg", {msg: msgObj.msg, nickname: socket.nickname})
     })
 })
+
+
+//FETCH GIF API FROM GIPHY
+io.on("connection", socket => {
+    socket.on("send-api", apigif => {
+            
+        function fetchGifApi() {
+    
+                console.log(socket.id)
+        
+                let gifArray
+                
+                const userInput = document.getElementById("input").value
+                const giphyApiKey = "Bhx9WisWg50kcqriLhdZQJYiycqFewTV";
+                const giphyApiUrl = `https://api.giphy.com/v1/gifs/search?api_key=${giphyApiKey}&q=${userInput}&limit=10&offset=0&rating=g&lang=en`
+                
+                fetch(giphyApiUrl, {
+                    method: 'GET',
+                    redirect: 'follow',
+                })
+                .then(response => response.json())
+                .then(result => gifArray = result) 
+                .then(() => {
+                    console.log(gifArray.data)
+                    const gifArrayMap = gifArray.data
+                    gifArrayMap.map(data => {
+                        // return console.log(data.images.downsized.url)
+                        var chatGif = gifOutput(data.images.downsized.url)
+                        return chatGif
+                    })
+                    io.emit("receive-gif", apigif.chatGif)
+
+                }).catch(error => console.log('error', error));
+        }
+    })
+})
+
+        
+
+
 
 
 
@@ -52,6 +86,12 @@ httpServer.listen(port, () => {
 
 
 
+
+
+
+
+    // socket.join("") //ange namnet på rummet
+    // socket.leave("") //ange namnet på rummet
 
 
 
