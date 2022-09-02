@@ -5,6 +5,10 @@ let joinedRoom = "";
 
 
 
+
+
+
+
 const container = document.querySelector('.container'),
     chatContainer = document.createElement('div'),
     chatContainerBox = document.createElement('div'),
@@ -12,8 +16,6 @@ const container = document.querySelector('.container'),
     msgInput = document.createElement('input'),
     msgBtn = document.createElement('button'),
     incMsg = document.createElement('p')
-
-
 
     chatContainer.classList.add('chatConBox')
     chatContainerBox.classList.add('chatSenderCon')
@@ -80,11 +82,14 @@ const landingLoad = ()=>{
 
 
 
+
+
 // Om man använder React, viktigt att lägga i useEffect som körs 1 gång.
 socket.on("newSocketConnected", (socketId) => {
     console.log("New socket connected: " + socketId);
     
 });
+
 
 
 socket.on("welcome", (msg) => {
@@ -161,6 +166,7 @@ msgInput.addEventListener('keypress', (e)=>{
 
 })
 
+
 msgBtn.addEventListener("click", () => {
     const msg = msgInput.value
     if(msgInput.value.length === 0){
@@ -203,54 +209,46 @@ document.getElementById("getRooms").addEventListener("click", () => {
 
 
 
+socket.on("send-api", (apigif) => {
+    console.log("asdas" + apigif.chatGif)
+
+})
 
 
-function sendApiRequest() {
+// document.getElementById("gifBtn").addEventListener("click", () => {
+//     socket.on("send-api", )
 
-    let gifArray
+//     const gifBtn = document.querySelector(".gifBtn")
 
-    const userInput = document.getElementById("input").value
-    const giphyApiKey = "Bhx9WisWg50kcqriLhdZQJYiycqFewTV";
-    const giphyApiUrl = `https://api.giphy.com/v1/gifs/search?api_key=${giphyApiKey}&q=${userInput}&limit=10&offset=0&rating=g&lang=en`
-
-    fetch(giphyApiUrl, {
-    method: 'GET',
-    redirect: 'follow',
-    })
-    .then(response => response.json())
-    .then(result => gifArray = result) 
-    .then(() => {
-        console.log(gifArray.data)
-        const gifArrayMap = gifArray.data
-        gifArrayMap.map(data => {
-            // return console.log(data.images.downsized.url)
-            return gifOutput(data.images.downsized.url)
-
-        })
-    }).catch(error => console.log('error', error));     
-}
+//     gifBtn.addEventListener("click", function() {
+//         sendApiRequest() 
+//     })
+// })
 
 
+// function gifOutput(gif) {
+//     const img = document.createElement("img")
+//     const imgPath = gif
+//     img.src = imgPath
+//     document.body.append(img)
+// }
 
 
+//   const gifBtn = document.querySelector(".gifBtn")
+//   gifBtn.addEventListener("click", function() {
+//     sendApiRequest() 
+//   })
 
-    const gifBtn = document.querySelector(".gifBtn")
+// function gifOutput(gif) {
 
-    gifBtn.addEventListener("click", function() {
-        sendApiRequest() 
-    })
-
-
-
-function gifOutput(gif) {
+//     const img = document.createElement("img")
+//     const imgPath = gif
+//     img.src = imgPath
+//     document.body.append(img)
+  
+// }
 
     
 
-    const img = document.createElement("img")
-    const imgPath = gif
-    img.src = imgPath
-    document.body.append(img)
-    
-}
 
 window.addEventListener('load', landingLoad)
