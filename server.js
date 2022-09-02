@@ -11,8 +11,10 @@ const io = new Server(httpServer);
 app.use("/", express.static("./client"))
 
 
+let users=[]
 
-io.on("connection", (socket) => {
+
+io.on("connection", (socket) => { 
     console.log("Socket has connected: " + socket.id)
 
     // io.emit("newSocketConnected", socket.id)
@@ -28,21 +30,54 @@ io.on("connection", (socket) => {
     // Rums lista, körs functionen uppdateras det på alla clienter 
     socket.on("getRooms", () => {
         console.log(io.sockets.adapter.rooms);
+        const filteredRoomsArray = convertRoomMap()
+        io.emit('rooms', filteredRoomsArray)
 
     })
 
-
-
+    
     // socket.join("") //ange namnet på rummet
     // socket.leave("") //ange namnet på rummet
 
 
     socket.on("msg", (msgObj) => {
-        io.in(msgObj.joinedRoom).emit("msg", {msg: msgObj.msg, nickname: socket.nickname})
+        const obj = {
+            msg: msgObj.msg, 
+            nickname: socket.nickname, 
+            id: socket.id
+        }
+
+        socket.emit("blue", obj)
+        socket.broadcast.to(msgObj.joinedRoom).emit("grey", obj)
+
     })
 })
 
+const convertRoomMap =()=>{
 
+    const convertedArray = Array.from(io.sockets.adapter.rooms)
+
+    console.log(io.sockets.adapter.rooms);
+    console.log(convertedArray);
+    
+    const filteredRooms = convertedArray.filter(room => ! room[1].has(room[0]))
+    console.log(filteredRooms);
+
+    const roomsWithSocketID = filteredRooms.map((roomArray) =>{
+        return {room: roomArray[0], sockets:Array.from(roomArray[1])}
+    })
+    console.log(roomsWithSocketID);
+    
+    const roomsWithIdsAndNickName = roomsWithSocketID.map((roomObj)=>{
+        const nicknames = roomObj.sockets.map((socketId)=>{
+            return { id: socketId, nickname: io.sockets.sockets.get(socketId).nickname }
+        })
+        return {room: roomObj.room, sockets: nicknames}
+    })
+
+    return roomsWithIdsAndNickName
+  
+}
 
 httpServer.listen(port, () => {
     console.log("Server is running on port: " + port)
