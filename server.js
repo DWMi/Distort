@@ -11,8 +11,10 @@ const io = new Server(httpServer);
 app.use("/", express.static("./client"))
 
 
+let users=[]
 
-io.on("connection", (socket) => {
+
+io.on("connection", (socket) => { 
     console.log("Socket has connected: " + socket.id)
 
     // io.emit("newSocketConnected", socket.id)
@@ -33,14 +35,21 @@ io.on("connection", (socket) => {
 
     })
 
-
-
+    
     // socket.join("") //ange namnet på rummet
     // socket.leave("") //ange namnet på rummet
 
 
     socket.on("msg", (msgObj) => {
-        io.in(msgObj.joinedRoom).emit("msg", {msg: msgObj.msg, nickname: socket.nickname})
+        const obj = {
+            msg: msgObj.msg, 
+            nickname: socket.nickname, 
+            id: socket.id
+        }
+
+        socket.emit("blue", obj)
+        socket.broadcast.to(msgObj.joinedRoom).emit("grey", obj)
+
     })
 })
 
