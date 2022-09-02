@@ -1,6 +1,6 @@
-const socket = io();
+const socket = io('http://localhost:3000');
 
-let nickname = "Jacob";
+let nickname = "";
 let joinedRoom = "";
 
 
@@ -8,37 +8,78 @@ let joinedRoom = "";
 
 
 
-const container = document.querySelector('.container')
-const chatContainer = document.createElement('div')
-const chatContainerBox = document.createElement('div')
-const msgContainer = document.createElement('div')
-const msgInput = document.createElement('input')
-const msgBtn = document.createElement('button')
+
+const container = document.querySelector('.container'),
+    chatContainer = document.createElement('div'),
+    chatContainerBox = document.createElement('div'),
+    msgContainer = document.createElement('div'),
+    msgInput = document.createElement('input'),
+    msgBtn = document.createElement('button'),
+    incMsg = document.createElement('p')
+
+    chatContainer.classList.add('chatConBox')
+    chatContainerBox.classList.add('chatSenderCon')
+    msgContainer.classList.add('msgCon')
+    msgInput.classList.add('msgInput')
+    msgBtn.classList.add('msgBtn')
+    incMsg.classList.add('incMsg')
+    
+    msgContainer.append(incMsg)
+    container.append(chatContainer)
+    chatContainer.append(msgContainer)
+    chatContainer.append(chatContainerBox)
+    chatContainerBox.append(msgInput)
+    chatContainerBox.append(msgBtn)
+    msgBtn.innerHTML = 'Send'
+    msgInput.placeholder = 'Message'
+    msgInput.type ='text'
 
 
-chatContainer.classList.add('chatConBox')
-chatContainerBox.classList.add('chatSenderCon')
-msgContainer.classList.add('msgCon')
-msgInput.classList.add('msgInput')
-msgBtn.classList.add('msgBtn')
 
-container.append(chatContainer)
-chatContainer.append(msgContainer)
-chatContainer.append(chatContainerBox)
-chatContainerBox.append(msgInput)
-chatContainerBox.append(msgBtn)
-msgBtn.innerHTML = 'Send'
-msgInput.placeholder = 'Message'
-msgInput.type ='text'
+const landingLoad = ()=>{
+
+    container.style.display = 'none'
+
+    const body = document.querySelector('body'),
+    landingCon = document.createElement('div'),
+    landHead = document.createElement('h1'),
+    nickInput = document.createElement('input'),
+    nickBtn = document.createElement('button')
+    
+    nickBtn.classList.add('nickBtn')
+    nickInput.classList.add('nickInput')
+    landHead.classList.add('landHead')
+    landingCon.classList.add('landingCon')
+
+    body.append(landingCon)
+    landingCon.append(landHead)
+    landingCon.append(nickInput)
+    landingCon.append(nickBtn)
+
+    nickInput.placeholder ='Nickname'
+    nickInput.type ='text'
+    nickBtn.innerHTML ='Submit'
+    nickBtn.disabled = true
 
 
+    
+    nickInput.addEventListener('input', function(){
 
+        if(nickInput.value.length <=  0 ){
 
-
-
-const sendMsg = () => {
-
+            }else{
+                nickBtn.disabled = false
+            }
+        
+        
+        })
+    nickBtn.addEventListener('click', ()=>{
+        nickname = nickInput.value
+        landingCon.style.display='none'
+        container.style.display ='flex'
+    })    
 }
+
 
 
 
@@ -46,6 +87,7 @@ const sendMsg = () => {
 // Om man använder React, viktigt att lägga i useEffect som körs 1 gång.
 socket.on("newSocketConnected", (socketId) => {
     console.log("New socket connected: " + socketId);
+    
 });
 
 
@@ -55,48 +97,103 @@ socket.on("welcome", (msg) => {
 })
 
 socket.on("msg", (msgObj) => {
-    console.log(`${msgObj.nickname} : ${msgObj.msg}`);
+    console.log(`${msgObj.nickname} : ${msgObj.msg} `);
+    // const socketId = socket.id
+    
+    // console.log(socket.id);
+    // msgFetcher(msgObj)
+})
+socket.on("blue", (msg) => {
+    outputBlueMessage(msg)
+    })
+socket.on("grey", (msg) => {
+        outputGreyMessage(msg)
+    })
+
+const outputBlueMessage =(data) => {
+    const inMessage = `${data.nickname} : ${data.msg} `
+    const chatBubble = document.createElement('div'),
+        outMsg = document.createElement('p')
+
+        outMsg.classList.add('outputBlueMsg')
+        chatBubble.classList.add('chatBubbleBlue')
+        msgContainer.append(chatBubble)
+        chatBubble.append(outMsg)
+        
+        outMsg.innerText = inMessage
+        chatBubble.scrollIntoView({behavior: "smooth", block: "end", inline: "nearest"});
+    msgInput.value = ''
+}   
+const outputGreyMessage = (data) => {
+    const inMessage = `${data.nickname} : ${data.msg} `
+    const chatBubble = document.createElement('div'),
+        outMsg = document.createElement('p')
+
+        outMsg.classList.add('outputGreyMsg')
+        chatBubble.classList.add('chatBubbleGrey')
+        msgContainer.append(chatBubble)
+        chatBubble.append(outMsg)
+        
+    outMsg.innerText = inMessage 
+    chatBubble.scrollIntoView({behavior: "smooth", block: "end", inline: "nearest"});
+    msgInput.value = ''
+    
+    
+}
+
+// Lägg till olika färger beroende på inkommande eller utgående meddelande!
+
+socket.on("rooms", (rooms) => {
+    console.log(rooms);
 })
 
 
 
+msgInput.addEventListener('keypress', (e)=>{
+    if(e.key === 'Enter'){
+        const msg = msgInput.value
+        if(msgInput.value.length === 0){
 
+        
+        }else{
+            socket.emit("msg", { msg, joinedRoom})
+            msgInput.placeholder='Message'
+        }
+        
+        
+    }
+    
+
+})
 
 
 msgBtn.addEventListener("click", () => {
     const msg = msgInput.value
-    socket.emit("msg", { msg, joinedRoom})
-    const outBubble = document.createElement('div'),
-        outMsg = document.createElement('p')
-        outBubble.classList.add('outBubble')
-        outMsg.classList.add('outMsg')
-        msgContainer.append(outBubble)
-        outBubble.append(outMsg)
-        
-    outMsg.innerText =  nickname +': '+ msg
-    msgInput.value = ''
-    console.log(nickname);
-
-})
-msgInput.addEventListener('keypress', (e)=>{
-    if(e.key === 'Enter'){
-
-        e.preventDefault();
-
-
-        const msg = msgInput.value
+    if(msgInput.value.length === 0){
+    
+    }else{
         socket.emit("msg", { msg, joinedRoom})
-        const outBubble = document.createElement('div'),
-            outMsg = document.createElement('p')
-            outBubble.classList.add('outBubble')
-            outMsg.classList.add('outMsg')
-            msgContainer.append(outBubble)
-            outBubble.append(outMsg)
-            
-        outMsg.innerText = nickname +': '+ msg
-        msgInput.value = ''
+        msgInput.placeholder='Message'
+        
     }
+    
 })
+
+
+// const msgFetcher=(data, id)=>{
+// const inMessage = `${data.nickname} : ${data.msg} `
+//     const chatBubble = document.createElement('div'),
+//         outMsg = document.createElement('p')
+//         outMsg.classList.add('outputBlueMsg')
+//         msgContainer.append(chatBubble)
+//         chatBubble.append(outMsg)
+        
+//        outMsg.innerText = inMessage + data.id 
+    
+//     msgInput.value = ''
+//     console.log(data)
+// }
+
 
 
 document.getElementById("roomBtn").addEventListener("click", () => {
@@ -110,20 +207,31 @@ document.getElementById("getRooms").addEventListener("click", () => {
 })
 
 
+
+
 socket.on("send-api", (apigif) => {
     console.log("asdas" + apigif.chatGif)
 
 })
 
 
+// document.getElementById("gifBtn").addEventListener("click", () => {
+//     socket.on("send-api", )
 
-document.getElementById("gifBtn").addEventListener("click", () => {
-    socket.on("send-api", )
-    const img = document.createElement("img")
-    const imgPath = gif
-    img.src = imgPath
-    document.body.append(img)
-})
+//     const gifBtn = document.querySelector(".gifBtn")
+
+//     gifBtn.addEventListener("click", function() {
+//         sendApiRequest() 
+//     })
+// })
+
+
+// function gifOutput(gif) {
+//     const img = document.createElement("img")
+//     const imgPath = gif
+//     img.src = imgPath
+//     document.body.append(img)
+// }
 
 
 //   const gifBtn = document.querySelector(".gifBtn")
@@ -139,3 +247,8 @@ document.getElementById("gifBtn").addEventListener("click", () => {
 //     document.body.append(img)
   
 // }
+
+    
+
+
+window.addEventListener('load', landingLoad)
