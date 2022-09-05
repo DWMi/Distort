@@ -43,15 +43,8 @@ io.on("connection", (socket) => {
             id: socket.id,
             image: socket.giphy
         }
-        // jämnföra socket.id med data.id elle fan det blir 
-        // io.in("room").emit("blue", obj)
-        socket.emit("blue", obj)
-        socket.broadcast.to(msgObj.joinedRoom).emit("grey", obj)
-
+        io.in(msgObj.joinedRoom).emit("msg", obj)
     })
-    // socket.on("gif",()=>{
-    // fetchGifApi()
-    // })  
 })
 
 
@@ -59,7 +52,7 @@ io.on("connection", (socket) => {
 
             async function fetchGifApi(inputValue) {
                     const giphyApiKey = "Bhx9WisWg50kcqriLhdZQJYiycqFewTV";
-                    const giphyApiUrl = `https://api.giphy.com/v1/gifs/search?api_key=${giphyApiKey}&q=${inputValue}&limit=10&offset=0&rating=g&lang=en`
+                    const giphyApiUrl = `https://api.giphy.com/v1/gifs/search?api_key=${giphyApiKey}&q=${inputValue}&limit=25&offset=0&rating=g&lang=en`
 
                     const response = await fetch(giphyApiUrl);
                     const body = await response.json();

@@ -12,7 +12,9 @@ const container = document.querySelector(".container"),
   msgContainer = document.createElement("div"),
   msgInput = document.createElement("input"),
   msgBtn = document.createElement("button"),
-  incMsg = document.createElement("p")
+  incMsg = document.createElement("p"),
+  gifCon = document.createElement("div")
+  
   
 
 chatContainer.classList.add("chatConBox");
@@ -84,7 +86,7 @@ const landingLoad = () => {
   });
 };
 
-// Om man använder React, viktigt att lägga i useEffect som körs 1 gång.
+
 socket.on("newSocketConnected", (socketId) => {
   console.log("New socket connected: " + socketId);
 });
@@ -93,48 +95,29 @@ socket.on("welcome", (msg) => {
   console.log(msg);
 });
 
-// socket.on("msg", (msgObj) => {
-//     console.log(`${msgObj.nickname} : ${msgObj.msg} `);
-//     // const socketId = socket.id
 
-//     // console.log(socket.id);
-//     // msgFetcher(msgObj)
-// })
 
-// förvandla till en 
-socket.on("blue", (msg) => {
-  outputBlueMessage(msg);
-});
-socket.on("grey", (msg) => {
-  outputGreyMessage(msg);
-});
-// Förvandla skiten till 1  funktion med en if bestäm färg istället.
-const outputBlueMessage = (data) => {
-  const inMessage = `${data.nickname} : ${data.msg} `;
-  const chatBubble = document.createElement("div"),
-    outMsg = document.createElement("p");
-  outMsg.classList.add("outputBlueMsg");
-  chatBubble.classList.add("chatBubbleBlue");
-  msgContainer.append(chatBubble);
-  chatBubble.append(outMsg);
+socket.on("msg", (msg) => {
+    outputMessage(msg)
+})
 
-  outMsg.innerText = inMessage;
-  chatBubble.scrollIntoView({
-    behavior: "smooth",
-    block: "end",
-    inline: "nearest",
-  });
-  msgInput.value = "";
-};
-const outputGreyMessage = (data) => {
+const outputMessage = (data) => {
   const inMessage = `${data.nickname} : ${data.msg} `;
   const chatBubble = document.createElement("div"),
     outMsg = document.createElement("p");
 
-  outMsg.classList.add("outputGreyMsg");
-  chatBubble.classList.add("chatBubbleGrey");
-  msgContainer.append(chatBubble);
-  chatBubble.append(outMsg);
+    if(socket.id === data.id) {
+        outMsg.classList.add("outputBlueMsg");
+        chatBubble.classList.add("chatBubbleBlue");
+        msgContainer.append(chatBubble);
+        chatBubble.append(outMsg);
+    }else{
+        outMsg.classList.add("outputGreyMsg");
+        chatBubble.classList.add("chatBubbleGrey");
+        msgContainer.append(chatBubble);
+        chatBubble.append(outMsg);
+    }
+    
 
   outMsg.innerText = inMessage;
   chatBubble.scrollIntoView({
@@ -145,7 +128,6 @@ const outputGreyMessage = (data) => {
   msgInput.value = "";
 };
 
-// Lägg till olika färger beroende på inkommande eller utgående meddelande!
 
 socket.on("rooms", (rooms) => {
   console.log(rooms);
@@ -176,74 +158,71 @@ let timer = undefined;
 let isWriting = false
 
 msgInput.addEventListener("input", (e) => {
-  if (timer) {
-    clearTimeout(timer);
-  }
-
-  // Om value == / , Visa giltiga kommandon
-  // Om value.legnth , startsWriting
-  // Om !value.legnth , stopsWriting
-  // Om value inte startar med "/gif ", töm preview med giffar istället kryss.
-
-  timer = setTimeout(() => {
-    if (e.target.value.startsWith("/gif ")) {
-      let input = e.target.value?.slice(5);
-      if (input) {
-        fetch("http://localhost:3000/gif", {
-          method: "post",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            input: input,
-          }),
-        })
-          .then((res) => res.json())
-          .then((data) => {
-            console.log(data);
-            gifs = data.data;
-            gifOutput(gifs);
-          });
-          
-      }
-    }else{
-      chatContainer.removeChild(gifCon)
+    if (timer) {
+      clearTimeout(timer);
     }
-  }, 1000);
-});
-
-function gifOutput(gifs) {
-  gifCon = document.createElement("div");
-  chatContainer.append(gifCon);
-  gifCon.classList.add("gifCon");
-
-  gifCon.innerHTML = "";
-//   const exitApiBox = document.createElement("div");
-//   exitApiBox.classList.add("exit");
-//   gifCon.append(exitApiBox);
-//   exitApiBox.innerText = "❌";
-//   exitApiBox.style.cursor = "pointer";
-
   
-
-  gifs.forEach((i) => {
-    const img = document.createElement("img"),
-      gifImgDiv = document.createElement("div");
-    gifImgDiv.style.cursor = "pointer";
-
-    gifImgDiv.addEventListener("click", () => {
-      gifs[i];
-      console.log(i.images.downsized.url);
-    });
-
-    gifImgDiv.classList.add("gifImgDiv");
-    img.classList.add("gifs");
-    gifCon.append(gifImgDiv);
-    gifImgDiv.append(img);
-
-    img.src = i.images.downsized.url;
+    // Om value == / , Visa giltiga kommandon
+    // Om value.legnth , startsWriting
+    // Om !value.legnth , stopsWriting
+    // Om value inte startar med "/gif ", töm preview med giffar istället kryss.
+  
+    timer = setTimeout(() => {
+      if (e.target.value.startsWith("/gif ")) {
+        let input = e.target.value?.slice(5);
+        if (input) {
+          fetch("http://localhost:3000/gif", {
+            method: "post",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              input: input,
+            }),
+          })
+            .then((res) => res.json())
+            .then((data) => {
+              console.log(data);
+              gifs = data.data;
+              gifOutput(gifs);
+            });
+  
+        }
+      }else(!e.target.value.startsWith("/gif "))
+      {
+        gifCon.innerHTML = ''
+      }
+    }, 1000);
   });
-}
+  
+  function gifOutput(gifs) {
+  
+    chatContainer.append(gifCon);
+    gifCon.classList.add("gifCon");
+  
+    gifCon.innerHTML = "";
+  
+  
+  
+  
+    gifs.forEach((i) => {
+      const img = document.createElement("img"),
+        gifImgDiv = document.createElement("div");
+      gifImgDiv.style.cursor = "pointer";
+  
+      gifImgDiv.addEventListener("click", () => {
+        gifs[i];
+        console.log(i.images.downsized.url);
+      });
+  
+      gifImgDiv.classList.add("gifImgDiv");
+      img.classList.add("gifs");
+      gifCon.append(gifImgDiv);
+      gifImgDiv.append(img);
+  
+      img.src = i.images.downsized.url;
+    });
+  }
 
 
 
