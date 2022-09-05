@@ -1,13 +1,17 @@
 import { createServer } from "http";
 import { Server } from "socket.io";
 import express from "express"
-
+import fetch from 'node-fetch';
 
 const app = express()
 const httpServer = createServer(app);
 const port = 3000;
-const io = new Server(httpServer);
-
+const io = new Server(httpServer, {
+    cors: {
+        origin: "*"
+    },
+}); 
+app.use(express.json())
 app.use("/", express.static("./client"))
 
 
@@ -40,57 +44,40 @@ io.on("connection", (socket) => {
         const obj = {
             msg: msgObj.msg, 
             nickname: socket.nickname, 
-            id: socket.id
+            id: socket.id,
+            gif: socket.giphy
         }
 
         socket.emit("blue", obj)
         socket.broadcast.to(msgObj.joinedRoom).emit("grey", obj)
 
     })
-})
+    socket.on("gif",()=>{
+    fetchGifApi()
+    })  
+        })
 
-const convertRoomMap =()=>{
+
 
 
 //FETCH GIF API FROM GIPHY
-io.on("connection", socket => {
-    socket.on("send-api", apigif => {
-            
-        function fetchGifApi() {
+// io.on("connection", socket => {
     
-                console.log(socket.id)
-        
-                let gifArray
-                
-                const userInput = document.getElementById("input").value
-                const giphyApiKey = "Bhx9WisWg50kcqriLhdZQJYiycqFewTV";
-                const giphyApiUrl = `https://api.giphy.com/v1/gifs/search?api_key=${giphyApiKey}&q=${userInput}&limit=10&offset=0&rating=g&lang=en`
-                
-                fetch(giphyApiUrl, {
-                    method: 'GET',
-                    redirect: 'follow',
-                })
-                .then(response => response.json())
-                .then(result => gifArray = result) 
-                .then(() => {
-                    console.log(gifArray.data)
-                    const gifArrayMap = gifArray.data
-                    gifArrayMap.map(data => {
-                        // return console.log(data.images.downsized.url)
-                        var chatGif = gifOutput(data.images.downsized.url)
-                        return chatGif
-                    })
-                    io.emit("receive-gif", apigif.chatGif)
+// })
 
-                }).catch(error => console.log('error', error));
-        }
-    })
-})
+            async function fetchGifApi(inputValue) {
+                    const giphyApiKey = "Bhx9WisWg50kcqriLhdZQJYiycqFewTV";
+                    const giphyApiUrl = `https://api.giphy.com/v1/gifs/search?api_key=${giphyApiKey}&q=${inputValue}&limit=10&offset=0&rating=g&lang=en`
 
+                    const response = await fetch(giphyApiUrl);
+                    const body = await response.json();
+                            
+                    return body
+            }
         
 
 
-
+const convertRoomMap =()=>{
 
 
     const convertedArray = Array.from(io.sockets.adapter.rooms)
@@ -114,10 +101,16 @@ io.on("connection", socket => {
     })
 
     return roomsWithIdsAndNickName
-  
+
 }
 
+app.post('/gif', async (req, res) => {
+    const { input } = req.body 
+     console.log(input)
+     const gifs = await fetchGifApi(input)
+     res.send(gifs)
 
+})
 httpServer.listen(port, () => {
     console.log("Server is running on port: " + port)
 })
