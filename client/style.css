@@ -20,7 +20,7 @@
     justify-content: flex-end;
     border: 2px solid white;
     width: 50%;
-    height: 40%;
+    height: 50%;
 }
 
 .chatSenderCon{
@@ -37,7 +37,8 @@
     flex-direction: column;
     align-items: flex-end;
     margin: 10px;
-    overflow-y: scroll;
+    min-height: 50%;
+    overflow-y: auto;
 }
 .chatBubbleBlue{
     display: flex;
@@ -105,4 +106,22 @@
     background-color: transparent;
     color:black;
     border:none;
+}
+
+
+
+.gifCon{
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+    width: 100%;
+    max-height: 60%;
+    overflow-x: scroll;
+}
+.gifImgDiv{
+    width: 30%;
+    height: 100%;
+}
+.gifs{
+    width: 100%;
 }

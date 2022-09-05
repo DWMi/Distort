@@ -6,11 +6,7 @@ import fetch from 'node-fetch';
 const app = express()
 const httpServer = createServer(app);
 const port = 3000;
-const io = new Server(httpServer, {
-    cors: {
-        origin: "*"
-    },
-}); 
+const io = new Server(httpServer); 
 app.use(express.json())
 app.use("/", express.static("./client"))
 
@@ -45,25 +41,21 @@ io.on("connection", (socket) => {
             msg: msgObj.msg, 
             nickname: socket.nickname, 
             id: socket.id,
-            gif: socket.giphy
+            image: socket.giphy
         }
-
+        // jämnföra socket.id med data.id elle fan det blir 
+        // io.in("room").emit("blue", obj)
         socket.emit("blue", obj)
         socket.broadcast.to(msgObj.joinedRoom).emit("grey", obj)
 
     })
-    socket.on("gif",()=>{
-    fetchGifApi()
-    })  
-        })
+    // socket.on("gif",()=>{
+    // fetchGifApi()
+    // })  
+})
 
 
 
-
-//FETCH GIF API FROM GIPHY
-// io.on("connection", socket => {
-    
-// })
 
             async function fetchGifApi(inputValue) {
                     const giphyApiKey = "Bhx9WisWg50kcqriLhdZQJYiycqFewTV";
@@ -106,9 +98,9 @@ const convertRoomMap =()=>{
 
 app.post('/gif', async (req, res) => {
     const { input } = req.body 
-     console.log(input)
-     const gifs = await fetchGifApi(input)
-     res.send(gifs)
+    console.log(input)
+    const gifs = await fetchGifApi(input)
+    res.send(gifs)
 
 })
 httpServer.listen(port, () => {
@@ -123,8 +115,6 @@ httpServer.listen(port, () => {
 
 
 
-    // socket.join("") //ange namnet på rummet
-    // socket.leave("") //ange namnet på rummet
 
 
 
