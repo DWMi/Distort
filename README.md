@@ -6,7 +6,7 @@ G:
 
 1.	En fungerade chatt där man kan skriva ett kommando ”/” för att utföra en operation som integrerar med 3-part. API-anropet skall ske via er server.
 
-2.	Man skall kunna sätta ett eget nickname som skickas med och visas tillsammans med meddelanden.
+2.	Man skall kunna sätta ett eget nickname som skickas med och visas tillsammans med meddelanden. ✅
 
 3.	Git & GitHub har använt. 
 

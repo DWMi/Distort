@@ -1,10 +1,10 @@
-// mottagar id här under
 const socket = io("http://localhost:3000");
 
 let nickname = "";
 let joinedRoom = "";
 let createdRooms = [];
 let gifs = [];
+let selectedGif;
 
 const container = document.querySelector(".container"),
   chatContainer = document.createElement("div"),
@@ -13,9 +13,10 @@ const container = document.querySelector(".container"),
   msgInput = document.createElement("input"),
   msgBtn = document.createElement("button"),
   incMsg = document.createElement("p"),
-  gifCon = document.createElement("div")
-  
-  
+  gifCon = document.createElement("div"),
+  roomCon = document.createElement('div'),
+  roomBox = document.createElement('div'),
+  roomName = document.createElement('h2')
 
 chatContainer.classList.add("chatConBox");
 chatContainerBox.classList.add("chatSenderCon");
@@ -23,21 +24,24 @@ msgContainer.classList.add("msgCon");
 msgInput.classList.add("msgInput");
 msgBtn.classList.add("msgBtn");
 incMsg.classList.add("incMsg");
-
+roomCon.classList.add('roomCon')
+roomBox.classList.add('roomBox')
+roomName.classList.add('roomName')
 
 msgContainer.append(incMsg);
 container.append(chatContainer);
+container.append(roomCon)
+roomCon.append(roomBox)
+roomBox.append(roomName)
 chatContainer.append(msgContainer);
 chatContainer.append(chatContainerBox);
 chatContainerBox.append(msgInput);
 chatContainerBox.append(msgBtn);
 
-
+roomName.innerText = 'Room: 1'
 msgBtn.innerHTML = "Send";
 msgInput.placeholder = "Message";
 msgInput.type = "text";
-
-
 
 const landingLoad = () => {
   container.style.display = "none";
@@ -86,7 +90,6 @@ const landingLoad = () => {
   });
 };
 
-
 socket.on("newSocketConnected", (socketId) => {
   console.log("New socket connected: " + socketId);
 });
@@ -95,31 +98,51 @@ socket.on("welcome", (msg) => {
   console.log(msg);
 });
 
-
-
 socket.on("msg", (msg) => {
-    outputMessage(msg)
-})
+  outputMessage(msg);
+});
 
 const outputMessage = (data) => {
-  const inMessage = `${data.nickname} : ${data.msg} `;
   const chatBubble = document.createElement("div"),
-    outMsg = document.createElement("p");
+    outMsg = document.createElement("div"),
+    outNickname = document.createElement("p");
 
-    if(socket.id === data.id) {
-        outMsg.classList.add("outputBlueMsg");
-        chatBubble.classList.add("chatBubbleBlue");
-        msgContainer.append(chatBubble);
-        chatBubble.append(outMsg);
-    }else{
-        outMsg.classList.add("outputGreyMsg");
-        chatBubble.classList.add("chatBubbleGrey");
-        msgContainer.append(chatBubble);
-        chatBubble.append(outMsg);
+  if (socket.id === data.id) {
+    console.log(data)
+    if(data.gif) {
+      outMsg.classList.add("outputBlueMsg");
+      chatBubble.classList.add("chatBubbleBlue");
+      msgContainer.append(chatBubble);
+      chatBubble.append(outMsg);
+    } else {
+       outMsg.classList.add("outputBlueMsg");
+      chatBubble.classList.add("chatBubbleBlue");
+      msgContainer.append(chatBubble);
+      chatBubble.append(outMsg);
     }
-    
 
-  outMsg.innerText = inMessage;
+  } 
+  else {
+    outMsg.classList.add("outputGreyMsg");
+    chatBubble.classList.add("chatBubbleGrey");
+    msgContainer.append(chatBubble);
+    chatBubble.append(outMsg);
+  }
+
+  if (data.gif) {
+    const gifChat = document.createElement('img')
+    gifChat.classList.add('gifChat')
+    gifChat.src = data.gif
+    outNickname.innerText = data.nickname + ": "
+    outMsg.append(outNickname);
+    outMsg.append(gifChat);
+
+  } else {
+    outMsg.innerText = `${data.nickname} : ${data.msg} `;
+  }
+
+
+  
   chatBubble.scrollIntoView({
     behavior: "smooth",
     block: "end",
@@ -128,7 +151,6 @@ const outputMessage = (data) => {
   msgInput.value = "";
 };
 
-
 socket.on("rooms", (rooms) => {
   console.log(rooms);
 });
@@ -136,7 +158,6 @@ socket.on("rooms", (rooms) => {
 msgInput.addEventListener("keydown", (e) => {
   if (e.key === "Enter") {
     const msg = msgInput.value;
-    console.log('llala')
     if (msgInput.value.length === 0) {
     } else {
       socket.emit("msg", { msg, joinedRoom });
@@ -155,76 +176,74 @@ msgBtn.addEventListener("click", () => {
 });
 
 let timer = undefined;
-let isWriting = false
+let isWriting = false;
 
 msgInput.addEventListener("input", (e) => {
-    if (timer) {
-      clearTimeout(timer);
-    }
-  
-    // Om value == / , Visa giltiga kommandon
-    // Om value.legnth , startsWriting
-    // Om !value.legnth , stopsWriting
-    // Om value inte startar med "/gif ", töm preview med giffar istället kryss.
-  
-    timer = setTimeout(() => {
-      if (e.target.value.startsWith("/gif ")) {
-        let input = e.target.value?.slice(5);
-        if (input) {
-          fetch("http://localhost:3000/gif", {
-            method: "post",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              input: input,
-            }),
-          })
-            .then((res) => res.json())
-            .then((data) => {
-              console.log(data);
-              gifs = data.data;
-              gifOutput(gifs);
-            });
-  
-        }
-      }else(!e.target.value.startsWith("/gif "))
-      {
-        gifCon.innerHTML = ''
-      }
-    }, 1000);
-  });
-  
-  function gifOutput(gifs) {
-  
-    chatContainer.append(gifCon);
-    gifCon.classList.add("gifCon");
-  
-    gifCon.innerHTML = "";
-  
-  
-  
-  
-    gifs.forEach((i) => {
-      const img = document.createElement("img"),
-        gifImgDiv = document.createElement("div");
-      gifImgDiv.style.cursor = "pointer";
-  
-      gifImgDiv.addEventListener("click", () => {
-        gifs[i];
-        console.log(i.images.downsized.url);
-      });
-  
-      gifImgDiv.classList.add("gifImgDiv");
-      img.classList.add("gifs");
-      gifCon.append(gifImgDiv);
-      gifImgDiv.append(img);
-  
-      img.src = i.images.downsized.url;
-    });
+  if (timer) {
+    clearTimeout(timer);
   }
 
+  // Om value == / , Visa giltiga kommandon
+  // Om value.legnth , startsWriting
+  // Om !value.legnth , stopsWriting
 
+
+  timer = setTimeout(() => {
+    if (e.target.value.startsWith("/gif ")) {
+      let input = e.target.value?.slice(5);
+      if (input) {
+        // convertera till get params?
+        fetch("http://localhost:3000/gif", {
+          method: "post",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            input: input,
+          }),
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            console.log(data);
+            gifs = data.data;
+            gifOutput(gifs);
+          });
+      }
+    } else !e.target.value.startsWith("/gif ");
+    {
+      gifCon.innerHTML = "";
+    }
+  }, 1000);
+});
+
+function gifOutput(gifs) {
+  chatContainer.append(gifCon);
+  gifCon.classList.add("gifCon");
+
+  gifCon.innerHTML = "";
+
+  gifs.forEach((i) => {
+    const img = document.createElement("img"),
+    gifImgDiv = document.createElement("div")
+    gifImgDiv.style.cursor = "pointer";
+    const selectedGif = i.images.downsized.url
+    
+    
+    gifImgDiv.addEventListener("click", () => {
+      
+      socket.emit("gif", {selectedGif, joinedRoom})
+      gifCon.innerHTML = "";
+      msgInput.value = ''    
+    }); 
+    
+    gifImgDiv.classList.add("gifImgDiv");
+    img.classList.add("gifs");
+    gifCon.append(gifImgDiv);
+    gifImgDiv.append(img);
+
+    img.src = i.images.downsized.url;
+  });
+}
 
 document.getElementById("roomBtn").addEventListener("click", () => {
   const room = document.getElementById("roomInput").value;
@@ -232,10 +251,12 @@ document.getElementById("roomBtn").addEventListener("click", () => {
   joinedRoom = room;
   createdRooms.push(joinedRoom);
   console.log(createdRooms);
-});
-
-document.getElementById("getRooms").addEventListener("click", () => {
   socket.emit("getRooms");
 });
+
+// document.getElementById("getRooms").addEventListener("click", () => {
+  
+// });
+
 
 window.addEventListener("load", landingLoad);
