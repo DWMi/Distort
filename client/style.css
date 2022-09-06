@@ -70,7 +70,7 @@
     border-radius: 10px;
     color: white;
     font-weight: bold;
-    max-width: 30%;
+    max-width: 40%;
     word-wrap: break-word;
 }
 
@@ -126,11 +126,28 @@
 }
 
 
+
 .isWritingBox {
     display: flex;
     justify-content: flex-start;
     align-items: flex-start;
     width: 40%;
     color: white;
+}
 
+.gifChat{
+    max-width: 50%;
+}
+
+
+.roomCon{
+    border: 2px solid white;
+    width: 40%;
+    min-height: 20%;
+}
+
+
+.roomName{
+    font-weight: bold;
+    color:white;
 }
