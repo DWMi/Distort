@@ -8,6 +8,7 @@ let selectedGif;
 
 const container = document.querySelector(".container"),
   chatContainer = document.createElement("div"),
+  isWritingBox = document.createElement("div"),   //box för is typing
   chatContainerBox = document.createElement("div"),
   msgContainer = document.createElement("div"),
   msgInput = document.createElement("input"),
@@ -19,6 +20,7 @@ const container = document.querySelector(".container"),
   roomName = document.createElement('h2')
 
 chatContainer.classList.add("chatConBox");
+isWritingBox.classList.add("isWritingBox");  //box för is typing
 chatContainerBox.classList.add("chatSenderCon");
 msgContainer.classList.add("msgCon");
 msgInput.classList.add("msgInput");
@@ -35,10 +37,13 @@ roomCon.append(roomBox)
 roomBox.append(roomName)
 chatContainer.append(msgContainer);
 chatContainer.append(chatContainerBox);
+chatContainer.append(isWritingBox); // box for is typing
 chatContainerBox.append(msgInput);
 chatContainerBox.append(msgBtn);
 
+
 roomName.innerText = 'Room: 1'
+
 msgBtn.innerHTML = "Send";
 msgInput.placeholder = "Message";
 msgInput.type = "text";
@@ -104,8 +109,10 @@ socket.on("msg", (msg) => {
 
 const outputMessage = (data) => {
   const chatBubble = document.createElement("div"),
+
     outMsg = document.createElement("div"),
     outNickname = document.createElement("p");
+    // isWritingBox.innerHTML = ""; //is writing
 
   if (socket.id === data.id) {
     console.log(data)
@@ -175,20 +182,55 @@ msgBtn.addEventListener("click", () => {
   }
 });
 
-let timer = undefined;
-let isWriting = false;
 
+
+//is typing TO server
+msgInput.addEventListener('keypress', () => {
+  socket.emit('isWriting', nickname);
+})
+
+//is typing FROM server
+socket.on("isWriting", (data) => {
+  isWritingBox.innerHTML = data + ":" + ' is typing...';
+
+  // stop typing TO server
+  msgInput.addEventListener("keypress", () => {
+  socket.emit("stopWriting")
+})
+  console.log(data + ":" + " is typing...")
+})
+
+
+// stop typing FROM server
+socket.on("stopWriting", (stopWriting) => {
+  if(msgInput.value.length <= 0) {
+    isWritingBox.innerHTML = ""
+  }
+})
+
+
+
+
+// Om value == / , Visa giltiga kommandon
+// Om value.length , startsWriting
+// Om !value.length , stopsWriting
+// Om value inte startar med "/gif ", töm preview med giffar istället kryss.
+
+
+let timer = undefined;
 msgInput.addEventListener("input", (e) => {
   if (timer) {
     clearTimeout(timer);
   }
 
-  // Om value == / , Visa giltiga kommandon
-  // Om value.legnth , startsWriting
-  // Om !value.legnth , stopsWriting
-
-
   timer = setTimeout(() => {
+
+          ///  stop writing
+          if(e.target.value.length <= 0) {  
+            isWritingBox.innerHTML = "";
+          }
+          /// stop writing
+
     if (e.target.value.startsWith("/gif ")) {
       let input = e.target.value?.slice(5);
       if (input) {
@@ -244,6 +286,7 @@ function gifOutput(gifs) {
     img.src = i.images.downsized.url;
   });
 }
+
 
 document.getElementById("roomBtn").addEventListener("click", () => {
   const room = document.getElementById("roomInput").value;

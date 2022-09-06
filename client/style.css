@@ -126,6 +126,15 @@
 }
 
 
+
+.isWritingBox {
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    width: 40%;
+    color: white;
+}
+
 .gifChat{
     max-width: 50%;
 }
