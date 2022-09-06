@@ -1,3 +1,4 @@
+
 // mottagar id här under
 const socket = io("http://localhost:3000");
 
@@ -8,6 +9,7 @@ let gifs = [];
 
 const container = document.querySelector(".container"),
   chatContainer = document.createElement("div"),
+  isWritingBox = document.createElement("div"),   //box för is typing
   chatContainerBox = document.createElement("div"),
   msgContainer = document.createElement("div"),
   msgInput = document.createElement("input"),
@@ -18,6 +20,7 @@ const container = document.querySelector(".container"),
   
 
 chatContainer.classList.add("chatConBox");
+isWritingBox.classList.add("isWritingBox");  //box för is typing
 chatContainerBox.classList.add("chatSenderCon");
 msgContainer.classList.add("msgCon");
 msgInput.classList.add("msgInput");
@@ -29,9 +32,9 @@ msgContainer.append(incMsg);
 container.append(chatContainer);
 chatContainer.append(msgContainer);
 chatContainer.append(chatContainerBox);
+chatContainer.append(isWritingBox); // box for is typing
 chatContainerBox.append(msgInput);
 chatContainerBox.append(msgBtn);
-
 
 msgBtn.innerHTML = "Send";
 msgInput.placeholder = "Message";
@@ -105,6 +108,7 @@ const outputMessage = (data) => {
   const inMessage = `${data.nickname} : ${data.msg} `;
   const chatBubble = document.createElement("div"),
     outMsg = document.createElement("p");
+        // isWritingBox.innerHTML = ""; //is writing
 
     if(socket.id === data.id) {
         outMsg.classList.add("outputBlueMsg");
@@ -136,7 +140,6 @@ socket.on("rooms", (rooms) => {
 msgInput.addEventListener("keydown", (e) => {
   if (e.key === "Enter") {
     const msg = msgInput.value;
-    console.log('llala')
     if (msgInput.value.length === 0) {
     } else {
       socket.emit("msg", { msg, joinedRoom });
@@ -154,20 +157,57 @@ msgBtn.addEventListener("click", () => {
   }
 });
 
+
+
+//is typing TO server
+msgInput.addEventListener('keypress', () => {
+  socket.emit('isWriting', nickname);
+})
+
+//is typing FROM server
+socket.on("isWriting", (data) => {
+  isWritingBox.innerHTML = data + ":" + ' is typing...';
+
+  // stop typing TO server
+  msgInput.addEventListener("keypress", () => {
+  socket.emit("stopWriting")
+})
+  console.log(data + ":" + " is typing...")
+})
+
+
+// stop typing FROM server
+socket.on("stopWriting", (stopWriting) => {
+  if(msgInput.value.length <= 0) {
+    isWritingBox.innerHTML = ""
+  }
+})
+
+
+
+
+
+
+// Om value == / , Visa giltiga kommandon
+// Om value.length , startsWriting
+// Om !value.length , stopsWriting
+// Om value inte startar med "/gif ", töm preview med giffar istället kryss.
+
 let timer = undefined;
-let isWriting = false
 
 msgInput.addEventListener("input", (e) => {
-    if (timer) {
-      clearTimeout(timer);
-    }
-  
-    // Om value == / , Visa giltiga kommandon
-    // Om value.legnth , startsWriting
-    // Om !value.legnth , stopsWriting
-    // Om value inte startar med "/gif ", töm preview med giffar istället kryss.
-  
+  if (timer) {
+    clearTimeout(timer);
+  }
+
     timer = setTimeout(() => {
+
+      ///  stop writing
+      if(e.target.value.length <= 0) {  
+        isWritingBox.innerHTML = "";
+      }
+      /// stop writing
+
       if (e.target.value.startsWith("/gif ")) {
         let input = e.target.value?.slice(5);
         if (input) {
@@ -223,6 +263,7 @@ msgInput.addEventListener("input", (e) => {
       img.src = i.images.downsized.url;
     });
   }
+
 
 
 

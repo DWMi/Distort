@@ -45,6 +45,18 @@ io.on("connection", (socket) => {
         }
         io.in(msgObj.joinedRoom).emit("msg", obj)
     })
+    
+    // is typing to client
+    socket.on("isWriting", (data) => {
+        socket.broadcast.emit("isWriting", data)
+    })
+
+    // stop typing to client
+    socket.on("stopWriting", (data) => {
+        socket.broadcast.emit("stopWriting", data)
+    })
+
+
 })
 
 
@@ -99,7 +111,6 @@ app.post('/gif', async (req, res) => {
 httpServer.listen(port, () => {
     console.log("Server is running on port: " + port)
 })
-
 
 
 
