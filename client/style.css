@@ -70,7 +70,7 @@
     border-radius: 10px;
     color: white;
     font-weight: bold;
-    max-width: 30%;
+    max-width: 40%;
     word-wrap: break-word;
 }
 
@@ -123,4 +123,22 @@
 }
 .gifs{
     width: 100%;
+}
+
+
+.gifChat{
+    max-width: 50%;
+}
+
+
+.roomCon{
+    border: 2px solid white;
+    width: 40%;
+    min-height: 20%;
+}
+
+
+.roomName{
+    font-weight: bold;
+    color:white;
 }

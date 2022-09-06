@@ -41,24 +41,27 @@ io.on("connection", (socket) => {
             msg: msgObj.msg, 
             nickname: socket.nickname, 
             id: socket.id,
-            image: socket.giphy
         }
         io.in(msgObj.joinedRoom).emit("msg", obj)
+    })
+    socket.on("gif",(gifObj)=>{
+        
+        io.in(gifObj.joinedRoom).emit("msg",{gif: gifObj.selectedGif, id: socket.id, nickname: socket.nickname})
     })
 })
 
 
 
 
-            async function fetchGifApi(inputValue) {
-                    const giphyApiKey = "Bhx9WisWg50kcqriLhdZQJYiycqFewTV";
-                    const giphyApiUrl = `https://api.giphy.com/v1/gifs/search?api_key=${giphyApiKey}&q=${inputValue}&limit=25&offset=0&rating=g&lang=en`
+    async function fetchGifApi(inputValue) {
+            const giphyApiKey = "Bhx9WisWg50kcqriLhdZQJYiycqFewTV";
+            const giphyApiUrl = `https://api.giphy.com/v1/gifs/search?api_key=${giphyApiKey}&q=${inputValue}&limit=25&offset=0&rating=g&lang=en`
 
-                    const response = await fetch(giphyApiUrl);
-                    const body = await response.json();
-                            
-                    return body
-            }
+            const response = await fetch(giphyApiUrl);
+            const body = await response.json();
+                    
+            return body
+    }
         
 
 
