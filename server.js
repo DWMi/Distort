@@ -49,11 +49,12 @@ io.on("connection", (socket) => {
     // is typing to client
     socket.on("isWriting", (data) => {
         socket.broadcast.emit("isWriting", data)
+        // socket.broadcast.to(data.rooms).emit("isWriting")
     })
 
     // stop typing to client
-    socket.on("stopWriting", (data) => {
-        socket.broadcast.emit("stopWriting", data)
+    socket.on("stopsWriting", () => {
+        socket.broadcast.emit("stopWriting")
     })
 
 
