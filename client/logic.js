@@ -109,11 +109,10 @@ socket.on("msg", (msg) => {
 
 const outputMessage = (data) => {
   const chatBubble = document.createElement("div"),
-
-    outMsg = document.createElement("div"),
-    outNickname = document.createElement("p");
-    // isWritingBox.innerHTML = ""; //is writing
-
+  outMsg = document.createElement("div"),
+  outNickname = document.createElement("p");
+  isWritingBox.innerHTML = ""
+  
   if (socket.id === data.id) {
     console.log(data)
     if(data.gif) {
@@ -185,30 +184,22 @@ msgBtn.addEventListener("click", () => {
 
 
 //is typing TO server
-msgInput.addEventListener('keypress', () => {
-  socket.emit('isWriting', nickname);
+msgInput.addEventListener('input', () => {
+    socket.emit('isWriting', nickname);
 })
 
 //is typing FROM server
 socket.on("isWriting", (data) => {
   isWritingBox.innerHTML = data + ":" + ' is typing...';
-
-  // stop typing TO server
-  msgInput.addEventListener("keypress", () => {
-  socket.emit("stopWriting")
-})
+  if(!msgInput.value.length) {
+    socket.emit("stopWriting")
+  }
   console.log(data + ":" + " is typing...")
 })
 
-
-// stop typing FROM server
-socket.on("stopWriting", (stopWriting) => {
-  if(msgInput.value.length <= 0) {
-    isWritingBox.innerHTML = ""
-  }
+socket.on("stopWriting", () => {
+  isWritingBox.innerHTML = ""
 })
-
-
 
 
 // Om value == / , Visa giltiga kommandon
@@ -224,12 +215,6 @@ msgInput.addEventListener("input", (e) => {
   }
 
   timer = setTimeout(() => {
-
-          ///  stop writing
-          if(e.target.value.length <= 0) {  
-            isWritingBox.innerHTML = "";
-          }
-          /// stop writing
 
     if (e.target.value.startsWith("/gif ")) {
       let input = e.target.value?.slice(5);
