@@ -4,9 +4,12 @@ let nickname = "";
 let joinedRoom = "";
 let createdRooms = [];
 let gifs = [];
+let roomUsers = []
 let selectedGif;
-
+// --------------------GLOBAL DOM ---------------------------//
 const container = document.querySelector(".container"),
+  container2 = document.createElement('div'),
+  container3 = document.createElement('div'),
   chatContainer = document.createElement("div"),
   isWritingBox = document.createElement("div"),   //box för is typing
   chatContainerBox = document.createElement("div"),
@@ -16,9 +19,14 @@ const container = document.querySelector(".container"),
   incMsg = document.createElement("p"),
   gifCon = document.createElement("div"),
   roomCon = document.createElement('div'),
-  roomBox = document.createElement('div'),
-  roomName = document.createElement('h2')
-
+  cmdCon = document.createElement('div'),
+  cmdBox = document.createElement('div'),
+  cmdSugg1 = document.createElement('p'),
+  cmdSugg2 = document.createElement('p'),
+  emojiCon = document.createElement('div')
+ 
+container2.classList.add('container2')
+container3.classList.add('container3')
 chatContainer.classList.add("chatConBox");
 isWritingBox.classList.add("isWritingBox");  //box för is typing
 chatContainerBox.classList.add("chatSenderCon");
@@ -27,27 +35,24 @@ msgInput.classList.add("msgInput");
 msgBtn.classList.add("msgBtn");
 incMsg.classList.add("incMsg");
 roomCon.classList.add('roomCon')
-roomBox.classList.add('roomBox')
-roomName.classList.add('roomName')
 
+container.append(container2)
+container2.append(container3)
 msgContainer.append(incMsg);
-container.append(chatContainer);
-container.append(roomCon)
-roomCon.append(roomBox)
-roomBox.append(roomName)
+container2.append(chatContainer);
+container3.append(roomCon)
+
 chatContainer.append(msgContainer);
 chatContainer.append(chatContainerBox);
 chatContainer.append(isWritingBox); // box for is typing
 chatContainerBox.append(msgInput);
 chatContainerBox.append(msgBtn);
 
-
-roomName.innerText = 'Room: 1'
-
 msgBtn.innerHTML = "Send";
 msgInput.placeholder = "Message";
 msgInput.type = "text";
 
+// ---------------NICKNAME LANDINGPAGE-----------------//
 const landingLoad = () => {
   container.style.display = "none";
 
@@ -92,30 +97,72 @@ const landingLoad = () => {
     nickname = nickInput.value;
     landingCon.style.display = "none";
     container.style.display = "flex";
+    socket.emit("getRooms");
   });
 };
 
+
+// --------------SOCKETS-------------------//
 socket.on("newSocketConnected", (socketId) => {
   console.log("New socket connected: " + socketId);
 });
 
-socket.on("welcome", (msg) => {
-  console.log(msg);
+socket.on("getUsers", (roomUsers) => {
+  console.log(roomUsers);
+getRoomUsers(roomUsers)
+
 });
 
 socket.on("msg", (msg) => {
   outputMessage(msg);
 });
 
+socket.on("rooms", (rooms) => {
+  roomGeter(rooms)
+})
+
+
+
+// ------------------USER-------------------------------
+
+
+const userBoxCon = document.createElement('div'),
+        userBox = document.createElement('div'),
+        userTitle = document.createElement('h2')
+const getRoomUsers =(userList)=>{
+  console.log(userList)
+    userBox.replaceChildren('')
+
+    container3.append(userBoxCon)
+    userBoxCon.append(userTitle)
+    userBoxCon.append(userBox)
+
+    userBoxCon.classList.add('userBoxCon')
+    userBox.classList.add('userBox')
+    userTitle.classList.add('userTitle')
+
+    console.log(userList)
+    userList.sockets.forEach(user =>{
+        const users = document.createElement('p')
+        users.innerText = ''
+        userBox.append(users)
+        users.classList.add('users')
+        users.innerText =`user: ${user.nickname}`
+        userTitle.innerText = `Users in room: ${userList.room}: `
+    })
+ 
+}
+
+//---------------MESSAGE-----------------------//
+
 const outputMessage = (data) => {
   const chatBubble = document.createElement("div"),
-  outMsg = document.createElement("div"),
-  outNickname = document.createElement("p");
-  isWritingBox.innerHTML = ""
-  
+
+    outMsg = document.createElement("div"),
+    outNickname = document.createElement("p");
+    isWritingBox.innerHTML = ""; 
   if (socket.id === data.id) {
-    console.log(data)
-    if(data.gif) {
+    if(data.gif || data.emoji) {
       outMsg.classList.add("outputBlueMsg");
       chatBubble.classList.add("chatBubbleBlue");
       msgContainer.append(chatBubble);
@@ -135,7 +182,7 @@ const outputMessage = (data) => {
     chatBubble.append(outMsg);
   }
 
-  if (data.gif) {
+  if (data.gif ) {
     const gifChat = document.createElement('img')
     gifChat.classList.add('gifChat')
     gifChat.src = data.gif
@@ -143,11 +190,16 @@ const outputMessage = (data) => {
     outMsg.append(outNickname);
     outMsg.append(gifChat);
 
-  } else {
+  } else if(data.emoji){
+    const emojiChat = document.createElement('p')
+    emojiChat.classList.add('emojiChat')
+    emojiChat.innerText = data.emoji
+    outNickname.innerText = data.nickname + ": "
+    outMsg.append(outNickname);
+    outMsg.append(emojiChat);
+  }else{
     outMsg.innerText = `${data.nickname} : ${data.msg} `;
   }
-
-
   
   chatBubble.scrollIntoView({
     behavior: "smooth",
@@ -156,10 +208,6 @@ const outputMessage = (data) => {
   });
   msgInput.value = "";
 };
-
-socket.on("rooms", (rooms) => {
-  console.log(rooms);
-});
 
 msgInput.addEventListener("keydown", (e) => {
   if (e.key === "Enter") {
@@ -182,33 +230,77 @@ msgBtn.addEventListener("click", () => {
 });
 
 
+// ------------------ROOOOOM-------------//
 
-//is typing TO server
-msgInput.addEventListener('input', () => {
-    socket.emit('isWriting', nickname);
-})
+const RoomDOM = (data)=>{
+  const roomName = document.createElement('h2'),
+  roomBox = document.createElement('div'),
+  roomJoin = document.createElement('div')
 
-//is typing FROM server
-socket.on("isWriting", (data) => {
-  isWritingBox.innerHTML = data + ":" + ' is typing...';
-  if(!msgInput.value.length) {
-    socket.emit("stopWriting")
+  roomName.classList.add('roomName')
+  roomBox.classList.add('roomBox')
+  roomJoin.classList.add('roomJoin')
+  
+  roomCon.append(roomBox)
+  roomBox.append(roomName)
+  roomBox.append(roomJoin)
+  roomName.innerText = `Room: ${data.room}`
+  roomJoin.innerText = ' Join'
+
+  roomJoin.addEventListener('click', ()=>{
+    console.log(data)
+    socket.emit("join", { roomToLeave: joinedRoom, roomToJoin: data.room, nickname });
+    socket.emit("getRooms")
+    // socket.emit("getRoomUsers", (nickname))
+    joinedRoom = data.room;
+  })
+  
+}
+
+const roomGeter =(roomNr)=>{
+  console.log(roomNr)
+
+  roomCon.innerHTML = ''
+    roomNr.forEach(data => {
+       RoomDOM(data)
+    });
+
+}
+
+//--------------------TYPING-------------////
+  //is typing TO server
+  let isWriting = false
+  msgInput.addEventListener('input', (e) => {
+  if (isWriting || e.target.value.length > 0) {
+      socket.emit('isWriting', nickname);
+  }else if (!isWriting || !e.target.value.length) {
+      socket.emit("stopWriting")
   }
-  console.log(data + ":" + " is typing...")
-})
+  })
 
-socket.on("stopWriting", () => {
-  isWritingBox.innerHTML = ""
-})
+  //is typing FROM server
+  socket.on("isWriting", (data) => {
+  isWritingBox.innerHTML = data + ":" + ' is typing...';
+
+  console.log(data + ":" + " is typing...")
+  })
+
+  socket.on("stopWriting", () => {
+          isWritingBox.innerHTML = ""
+  })
+
+
+
 
 
 // Om value == / , Visa giltiga kommandon
 // Om value.length , startsWriting
 // Om !value.length , stopsWriting
-// Om value inte startar med "/gif ", töm preview med giffar istället kryss.
 
 
+// ---------------------API-------------------------//
 let timer = undefined;
+
 msgInput.addEventListener("input", (e) => {
   if (timer) {
     clearTimeout(timer);
@@ -216,6 +308,51 @@ msgInput.addEventListener("input", (e) => {
 
   timer = setTimeout(() => {
 
+          ///  stop writing
+          // if(!e.target.value.length) {  
+          //   isWritingBox.innerHTML = "";
+          // }
+          // /// stop writing
+          
+
+         chatContainerBox.before(cmdCon)
+
+    if(e.target.value === '/' ){
+      cmdCon.innerHTML = ''
+       cmdOutput(cmdCon, cmdBox, cmdSugg1, cmdSugg2)
+     
+
+     
+    }else if(e.target.value === '' || e.target.value === '/gif ' || e.target.value === '/emoji ')
+      {
+        cmdCon.replaceChildren('')
+       
+      }
+
+//--------------EMOJI FETCH----------------//
+if (e.target.value.startsWith("/emoji ")) {
+  let input = e.target.value?.slice(7);
+  if(input){
+    fetch("http://localhost:3000/emoji", {
+      method: "post",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        input: input,
+      }),
+    })
+    .then((res) => res.json())
+    .then((data) => {
+      console.log(data);
+      emojiOutput(data);
+    });
+  }
+}else (!e.target.value.startsWith("/emoji "))
+{
+  emojiCon.innerHTML = "";
+}
+// ------------GIF EMOJI-----------------//
     if (e.target.value.startsWith("/gif ")) {
       let input = e.target.value?.slice(5);
       if (input) {
@@ -232,16 +369,63 @@ msgInput.addEventListener("input", (e) => {
           .then((res) => res.json())
           .then((data) => {
             console.log(data);
-            gifs = data.data;
-            gifOutput(gifs);
+            gifOutput(data.data);
           });
       }
-    } else !e.target.value.startsWith("/gif ");
+    } else (!e.target.value.startsWith("/gif "))
     {
       gifCon.innerHTML = "";
     }
-  }, 1000);
+  }, 100);
 });
+
+const cmdOutput =(cmdCon, cmdBox, cmdSugg1, cmdSugg2)=>{
+  
+  cmdCon.append(cmdBox)
+  cmdBox.append(cmdSugg1)
+  cmdBox.append(cmdSugg2)
+
+  cmdCon.classList.add('cmdCon')
+  cmdBox.classList.add('cmdBox')
+  cmdSugg1.classList.add('cmdSugg1')
+  cmdSugg2.classList.add('cmdSugg2')
+
+  cmdSugg1.innerText ='/gif example -> /gif cat '
+  cmdSugg2.innerText ='/emoji example -> /emoji cat' 
+  
+}
+// --------EMOJI-----------------//
+function emojiOutput(emojis) {
+  chatContainer.append(emojiCon);
+  emojiCon.classList.add("emojiCon");
+
+  emojiCon.innerHTML = "";
+console.log(emojis)
+  emojis.forEach((i) => {
+    const emojiP = document.createElement("p"),
+    emojiPDiv = document.createElement("div")
+    emojiPDiv.style.cursor = "pointer";
+    const selectedEmoji = i.character
+    
+    
+    emojiPDiv.addEventListener("click", () => {
+      
+      socket.emit("emoji", {selectedEmoji, joinedRoom})
+      emojiCon.innerHTML = "";
+      msgInput.value = ''  
+      chatContainer.removeChild(cmdCon)
+    }); 
+    
+    emojiPDiv.classList.add("emojiPDiv");
+    emojiP.classList.add("emojis");
+    emojiCon.append(emojiPDiv);
+    emojiPDiv.append(emojiP);
+
+    emojiP.innerText = i.character;
+  });
+}
+
+//---------------GIF------------------//
 
 function gifOutput(gifs) {
   chatContainer.append(gifCon);
@@ -261,6 +445,7 @@ function gifOutput(gifs) {
       socket.emit("gif", {selectedGif, joinedRoom})
       gifCon.innerHTML = "";
       msgInput.value = ''    
+      chatContainer.removeChild(cmdCon)
     }); 
     
     gifImgDiv.classList.add("gifImgDiv");
@@ -273,18 +458,22 @@ function gifOutput(gifs) {
 }
 
 
-document.getElementById("roomBtn").addEventListener("click", () => {
-  const room = document.getElementById("roomInput").value;
-  socket.emit("join", { roomToLeave: joinedRoom, roomToJoin: room, nickname });
-  joinedRoom = room;
-  createdRooms.push(joinedRoom);
-  console.log(createdRooms);
-  socket.emit("getRooms");
-});
 
-// document.getElementById("getRooms").addEventListener("click", () => {
-  
-// });
+
+
+
+  const roomBtn = document.getElementById("roomBtn")
+  roomBtn.addEventListener("click", () => {
+    const room = document.getElementById("roomInput").value;
+    socket.emit("join", { roomToLeave: joinedRoom, roomToJoin: room, nickname });
+    socket.emit("getRooms")
+      joinedRoom = room;
+      createdRooms.push(joinedRoom);
+      console.log(createdRooms);
+     console.log(joinedRoom)
+  });
+
+
 
 
 window.addEventListener("load", landingLoad);

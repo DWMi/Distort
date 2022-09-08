@@ -11,6 +11,22 @@
     height: 100vh;
     background-color: black;
 }
+.container2{
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+}
+.container3{
+    height: 50%;
+    min-width: 20%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border: 2px solid white;
+}
 .headerChatt{
     color: white;
 }
@@ -125,9 +141,33 @@
     width: 100%;
 }
 
+.gifChat{
+    max-width: 80%;
+}
 
+.emojiCon{
 
-.isWritingBox {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    flex-direction: row;
+    width: 100%;
+    max-height: 20%;
+    overflow-y: auto;
+
+}
+
+.emojiImgDiv{
+    width: 25%;
+}
+.emojis{
+    width: 100%;
+}
+
+.emojiChat{
+    font-size: 60px;
+}
+.isWritingBox{
     display: flex;
     justify-content: flex-start;
     align-items: flex-start;
@@ -135,19 +175,65 @@
     color: white;
 }
 
-.gifChat{
-    max-width: 50%;
-}
+
 
 
 .roomCon{
-    border: 2px solid white;
-    width: 40%;
-    min-height: 20%;
+    display:flex;
+    flex-direction:column;
+    justify-content: space-between;
+    overflow-y:auto ;
+    min-width: 20%;
+    min-height: 50%;
 }
 
 
 .roomName{
     font-weight: bold;
     color:white;
+}
+.roomBox{
+    display:flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap:30px;
+    margin: 15px;
+}
+.roomJoin{
+    font-size: 20px;
+    color:white; 
+    font-weight: bold;
+    cursor:pointer;
+    border: 2px solid white;
+    padding: 5px;
+}
+
+.users{
+    color:white;
+}
+
+.cmdBox{
+    background-color:gray ;
+    width: 100%;
+    border-radius: 10px;
+    font-weight: bolder;
+    font-size: 20px;
+    padding: 10px;
+}
+.userBoxCon{
+    overflow-y:auto ;
+    min-width: 20%;
+    min-height: 50%;
+    padding:20px;
+    overflow-y: auto;
+
+}
+.userBox{
+    font-weight: bold;
+    font-size: 20px;
+    margin: 5px;
+}
+.userTitle{
+    color:white;
+    margin: 5px;
 }
