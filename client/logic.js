@@ -8,6 +8,8 @@ let roomUsers = []
 let selectedGif;
 // --------------------GLOBAL DOM ---------------------------//
 const container = document.querySelector(".container"),
+  container2 = document.createElement('div'),
+  container3 = document.createElement('div'),
   chatContainer = document.createElement("div"),
   isWritingBox = document.createElement("div"),   //box för is typing
   chatContainerBox = document.createElement("div"),
@@ -23,6 +25,8 @@ const container = document.querySelector(".container"),
   cmdSugg2 = document.createElement('p'),
   emojiCon = document.createElement('div')
  
+container2.classList.add('container2')
+container3.classList.add('container3')
 chatContainer.classList.add("chatConBox");
 isWritingBox.classList.add("isWritingBox");  //box för is typing
 chatContainerBox.classList.add("chatSenderCon");
@@ -32,9 +36,11 @@ msgBtn.classList.add("msgBtn");
 incMsg.classList.add("incMsg");
 roomCon.classList.add('roomCon')
 
+container.append(container2)
+container2.append(container3)
 msgContainer.append(incMsg);
-container.append(chatContainer);
-container.append(roomCon)
+container2.append(chatContainer);
+container3.append(roomCon)
 
 chatContainer.append(msgContainer);
 chatContainer.append(chatContainerBox);
@@ -121,24 +127,28 @@ socket.on("rooms", (rooms) => {
 
 
 const userBoxCon = document.createElement('div'),
-        userBox = document.createElement('div')
+        userBox = document.createElement('div'),
+        userTitle = document.createElement('h2')
 const getRoomUsers =(userList)=>{
   console.log(userList)
     userBox.replaceChildren('')
 
-    container.append(userBoxCon)
+    container3.append(userBoxCon)
+    userBoxCon.append(userTitle)
     userBoxCon.append(userBox)
 
     userBoxCon.classList.add('userBoxCon')
     userBox.classList.add('userBox')
+    userTitle.classList.add('userTitle')
 
     console.log(userList)
-    userList.sockets.map(user =>{
+    userList.sockets.forEach(user =>{
         const users = document.createElement('p')
         users.innerText = ''
         userBox.append(users)
         users.classList.add('users')
-        return users.innerText =`user: ${user.nickname}`
+        users.innerText =`user: ${user.nickname}`
+        userTitle.innerText = `Users in room: ${userList.room}: `
     })
  
 }
@@ -150,7 +160,7 @@ const outputMessage = (data) => {
 
     outMsg = document.createElement("div"),
     outNickname = document.createElement("p");
-    // isWritingBox.innerHTML = ""; //is writing
+    isWritingBox.innerHTML = ""; 
   if (socket.id === data.id) {
     if(data.gif || data.emoji) {
       outMsg.classList.add("outputBlueMsg");
@@ -223,7 +233,6 @@ msgBtn.addEventListener("click", () => {
 // ------------------ROOOOOM-------------//
 
 const RoomDOM = (data)=>{
-  
   const roomName = document.createElement('h2'),
   roomBox = document.createElement('div'),
   roomJoin = document.createElement('div')
@@ -258,36 +267,28 @@ const roomGeter =(roomNr)=>{
 
 }
 
-
-
-//is typing TO server
-msgInput.addEventListener('keydown', () => {
-socket.emit('isWriting', nickname);
-})
-
-//is typing FROM server
-socket.on("isWriting", (data) => {
-    if(msgInput.value.length){
-      socket.emit('isWriting'), ()=>{
-         isWritingBox.innerHTML = data + ":" + ' is typing...';
-      }
+//--------------------TYPING-------------////
+  //is typing TO server
+  let isWriting = false
+  msgInput.addEventListener('input', (e) => {
+  if (isWriting || e.target.value.length > 0) {
+      socket.emit('isWriting', nickname);
+  }else if (!isWriting || !e.target.value.length) {
+      socket.emit("stopWriting")
   }
- 
+  })
 
-  // stop typing TO server
-//   msgInput.addEventListener("keypress", () => {
-//   socket.emit("stopWriting")
-// })
-  // console.log(data + ":" + " is typing...")
-})
+  //is typing FROM server
+  socket.on("isWriting", (data) => {
+  isWritingBox.innerHTML = data + ":" + ' is typing...';
 
+  console.log(data + ":" + " is typing...")
+  })
 
-// stop typing FROM server
-socket.on("stopWriting", (stopWriting) => {
-  if(msgInput.value.length <= 0) {
-    isWritingBox.innerHTML = ""
-  }
-})
+  socket.on("stopWriting", () => {
+          isWritingBox.innerHTML = ""
+  })
+
 
 
 
@@ -389,8 +390,8 @@ const cmdOutput =(cmdCon, cmdBox, cmdSugg1, cmdSugg2)=>{
   cmdSugg1.classList.add('cmdSugg1')
   cmdSugg2.classList.add('cmdSugg2')
 
-  cmdSugg1.innerText ='/gif example '
-  cmdSugg2.innerText ='/emoji example' 
+  cmdSugg1.innerText ='/gif example -> /gif cat '
+  cmdSugg2.innerText ='/emoji example -> /emoji cat' 
   
 }
 // --------EMOJI-----------------//

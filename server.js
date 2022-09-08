@@ -52,11 +52,6 @@ io.on("connection", (socket) => {
 
 
 
-
-
-
-
-
     socket.on("msg", (msgObj) => {
         const obj = {
             msg: msgObj.msg, 
@@ -66,18 +61,18 @@ io.on("connection", (socket) => {
         io.in(msgObj.joinedRoom).emit("msg", obj)
     })
 
-    
+
     // is typing to client
     socket.on("isWriting", (data) => {
         socket.broadcast.emit("isWriting", data)
         // socket.broadcast.to(data.rooms).emit("isWriting")
     })
-
+    
     // stop typing to client
-    socket.on("stopsWriting", () => {
+    socket.on("stopWriting", () => {
         socket.broadcast.emit("stopWriting")
     })
-
+    
 
 
     socket.on("gif",(gifObj)=>{ 
